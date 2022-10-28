@@ -7,11 +7,18 @@
 
 #include "common_defs.h"
 
+#include "user_mockDB.c"
+
 int serve_client(int client_fd);
 int user_auth(int client_fd);
 
 int main()
 {
+	//read users db
+	if (read_db()==-1){
+		perror(DB_READ_FAIL);
+		return -1;
+	}
 	//1. socket();
 	int server_fd = socket(AF_INET,SOCK_STREAM,0);
 	printf("server_fd = %d \n",server_fd);

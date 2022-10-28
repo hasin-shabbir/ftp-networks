@@ -32,9 +32,7 @@ int read_db(){
             }
             val_type=(val_type+1)%2;
         }
-    }
-    else{
-        printf(DB_READ_FAIL);
+        return 1;
     }
 
     return -1;
