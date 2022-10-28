@@ -210,7 +210,7 @@ int handle_user_cmd(char* request_content, int client_fd){
 	char* username = strtok(request_buff,delim);
 	username = strtok(NULL,delim);
 	for (int i=0;i<MAX_USERS;i++){
-		if (strcmp(CURRENT_USERS[i].username,username)==0){
+		if (strncmp(CURRENT_USERS[i].username,username,strlen(username)-1)==0){
 			CURRENT_USERS[i].id = client_fd;
 			return 1;
 		}
@@ -224,9 +224,8 @@ int handle_password_cmd(char* request_content, int client_fd){
 	char delim[] = " ";
 	char* password = strtok(request_buff,delim);
 	password = strtok(NULL,delim);
-	printf("pass: %s\n", password);
 	for (int i=0;i<MAX_USERS;i++){
-		if (CURRENT_USERS[i].id == client_fd && strcmp(CURRENT_USERS[i].password, password)==0){
+		if (CURRENT_USERS[i].id == client_fd && strncmp(CURRENT_USERS[i].password, password, strlen(password)-1)==0){
 			return 1;
 		}
 	}
