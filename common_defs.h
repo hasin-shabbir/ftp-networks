@@ -16,6 +16,7 @@
 #define USER_FAILURE "530 Not logged in."
 #define PASSWORD_SUCCESS "230 User logged in, proceed."
 #define PASSWORD_FAILURE "530 Not logged in."
+#define QUIT_MESSAGE "221 Service closing control connection."
 
 #define PORT_CMD 0
 #define USER_CMD 1

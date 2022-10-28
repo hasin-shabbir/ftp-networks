@@ -131,6 +131,7 @@ int serve_client(int client_fd){
 		}
 		if (req_type==QUIT_CMD){ //QUIT
 			printf("Client disconnected \n");
+			send(client_fd,QUIT_MESSAGE,strlen(QUIT_MESSAGE),0);
 			close(client_fd);
 			return -1;
 		}
