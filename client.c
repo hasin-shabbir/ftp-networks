@@ -88,7 +88,7 @@ void instructions()
 
 void user_login(int server_sd)
 {
-	char buffer[BUFFER_SIZE];
+	char buffer[MESSAGE_BUFFER_SIZE];
 	// char* command1;
 	// char* command2;
 	char* error = "Login failed. Please try again.";
@@ -97,7 +97,7 @@ void user_login(int server_sd)
 	{
 		bzero(buffer, sizeof(buffer));
 		printf("ftp> ");
-		fgets(buffer, BUFFER_SIZE, stdin);
+		fgets(buffer, MESSAGE_BUFFER_SIZE, stdin);
 		// command1 = strtok(buffer, " ");
 		// command2 = strtok(NULL, "\n");
 
@@ -118,7 +118,7 @@ void user_login(int server_sd)
 		{
 			bzero(buffer, sizeof(buffer));
 			printf("ftp> ");
-			fgets(buffer, BUFFER_SIZE, stdin);
+			fgets(buffer, MESSAGE_BUFFER_SIZE, stdin);
 			// command1 = strtok(buffer, " ");
 			// command2 = strtok(NULL, "\n");
 
