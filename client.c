@@ -54,7 +54,7 @@ int main()
        if(strncmp(buffer,"QUIT", 4)==0)
         {
 			send(server_sd,buffer,strlen(buffer),0);
-        	rcvd(server_sd, buffer, sizeof(buffer), 0);
+        	recv(server_sd, buffer, sizeof(buffer), 0);
 			printf("%s\n", buffer);
 			bzero(buffer,sizeof(buffer));
         	close(server_sd);
