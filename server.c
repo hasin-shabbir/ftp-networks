@@ -6,6 +6,7 @@
 #include<unistd.h>
 
 #define PORT 6000
+#define BUFFER_SIZE 256
 
 int serve_client(int client_fd);
 
@@ -52,9 +53,6 @@ int main()
 	//4. accept()
 	while(1)
 	{	
-        FD_ZERO(&full_fdset);
-        FD_SET(server_fd,&full_fdset);
-        max_fd = server_fd;
 		// printf("max_fd=%d\n",max_fd);
 		ready_fdset = full_fdset;
 		if(select(max_fd+1,&ready_fdset,NULL,NULL,NULL)<0)
@@ -88,7 +86,7 @@ int main()
 //=================================
 int serve_client(int client_fd)
 {
-	char message[100];	
+	char message[BUFFER_SIZE];	
 	bzero(&message,sizeof(message));
 	if(recv(client_fd,message,sizeof(message),0)<0)
 	{
