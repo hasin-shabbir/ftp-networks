@@ -17,4 +17,18 @@
 #define PASSWORD_SUCCESS "230 User logged in, proceed."
 #define PASSWORD_FAILURE "530 Not logged in."
 
+#define PORT_CMD 0
+#define USER_CMD 1
+#define PASS_CMD 2
+#define STOR_CMD 3
+#define RETR_CMD 4
+#define LIST_CMD 5
+#define CWD_CMD 6
+#define PWD_CMD 7
+#define C_LIST_CMD 8
+#define C_CWD_CMD 9
+#define C_PWD_CMD 10
+#define QUIT_CMD 11
+#define INVALID_CMD -1
+
 #endif
