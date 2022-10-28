@@ -5,13 +5,23 @@
 #include<arpa/inet.h>
 #include<unistd.h>
 
-#define PORT 6000
-#define BUFFER_SIZE 256
+#include "common_defs.h"
+
+#include "user_mockDB.c"
 
 int serve_client(int client_fd);
+int user_auth(int client_fd);
+int request_type(char* request_content);
+int handle_user_cmd(char* request_content, int client_fd);
+int handle_password_cmd(char* request_content, int client_fd);
 
 int main()
 {
+	//read users db
+	if (read_db()==-1){
+		perror(DB_READ_FAIL);
+		return -1;
+	}
 	//1. socket();
 	int server_fd = socket(AF_INET,SOCK_STREAM,0);
 	printf("server_fd = %d \n",server_fd);
@@ -29,8 +39,8 @@ int main()
 	struct sockaddr_in server_address;
 	bzero(&server_address,sizeof(server_address));
 	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons(PORT);
-	server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server_address.sin_port = htons(CONTROL_PORT);
+	server_address.sin_addr.s_addr = inet_addr(SERVER_IP);
 	if(bind(server_fd,(struct sockaddr*)&server_address,sizeof(server_address))<0)
 	{
 		perror("bind");
@@ -84,14 +94,40 @@ int main()
 	close(server_fd);
 }
 //=================================
-int serve_client(int client_fd)
-{
-	char message[BUFFER_SIZE];	
+int serve_client(int client_fd){
+	char message[MESSAGE_BUFFER_SIZE];	
 	bzero(&message,sizeof(message));
 	if(recv(client_fd,message,sizeof(message),0)<0)
 	{
 		perror("recv");
 		return 0;
+	}
+	int req_type = request_type(message);
+
+	int is_auth = 0;
+	if (req_type>=1 && req_type<=7){
+		if (req_type==1){ //USER
+			int result = handle_user_cmd(message, client_fd);
+			if (result==1){
+				send(client_fd,USER_SUCCESS,strlen(USER_SUCCESS),0);
+				printf("user ok sent to client\n"); // TO BE REMOVED
+			}
+			else if (result==-1){
+				send(client_fd,USER_FAILURE,strlen(USER_FAILURE),0);
+				printf("user fail sent to client\n"); // TO BE REMOVED
+			}
+		}
+		if (req_type==2){
+			int result = handle_user_cmd(message, client_fd);
+			if (result==1){
+				send(client_fd,PASSWORD_SUCCESS,strlen(PASSWORD_SUCCESS),0);
+				printf("password ok sent to client\n"); // TO BE REMOVED
+			}
+			else if (result==-1){
+				send(client_fd,PASSWORD_FAILURE,strlen(PASSWORD_FAILURE),0);
+				printf("password fail sent to client\n"); // TO BE REMOVED
+			}
+		}
 	}
 
 	if(strcmp(message,"bye")==0)
@@ -102,4 +138,91 @@ int serve_client(int client_fd)
 	}
 	printf("%s \n",message);
 	return 0;
+}
+
+int request_type(char* request_content){
+	char request_buff[MESSAGE_BUFFER_SIZE];
+	char delim[] = " ";
+	char* req_type = strtok(request_buff,delim);
+	int req_code;
+
+	if (strcmp(req_type, "PORT") == 0){
+		req_code = 0;
+		return req_code;
+	}
+	if (strcmp(req_type, "USER") == 0){
+		req_code = 1;
+		return req_code;
+	}
+	else if(strcmp(req_type, "PASS") == 0){
+		req_code = 2;
+		return req_code;
+	}
+	else if(strcmp(req_type, "STOR") == 0){
+		req_code = 3;
+		return req_code;
+	}
+	else if(strcmp(req_type, "RETR") == 0){
+		req_code = 4;
+		return req_code;
+	}
+	else if(strcmp(req_type, "LIST") == 0){
+		req_code = 5;
+		return req_code;
+	}
+	else if(strcmp(req_type, "CWD") == 0){
+		req_code = 6;
+		return req_code;
+	}
+	else if(strcmp(req_type, "PWD") == 0){
+		req_code = 7;
+		return req_code;
+	}
+	else if(strcmp(req_type, "!LIST") == 0){
+		req_code = 8;
+		return req_code;
+	}
+	else if(strcmp(req_type, "!CWD") == 0){
+		req_code = 9;
+		return req_code;
+	}
+	else if(strcmp(req_type, "!PWD") == 0){
+		req_code = 10;
+		return req_code;
+	}
+	else if(strcmp(req_type, "QUIT") == 0){
+		req_code = 11;
+		return req_code;
+	}
+	else{
+		req_code = -1;
+		return req_code;
+	}
+};
+
+int handle_user_cmd(char* request_content, int client_fd){
+	char request_buff[MESSAGE_BUFFER_SIZE];
+	char delim[] = " ";
+	char* username = strtok(request_buff,delim);
+	username = strtok(NULL,delim);
+	for (int i=0;i<MAX_USERS;i++){
+		if (strcmp(CURRENT_USERS[i].username,username)==0){
+			CURRENT_USERS[i].id = client_fd;
+			return 1;
+		}
+	}
+	return -1;
+}
+
+int handle_password_cmd(char* request_content, int client_fd){
+	char request_buff[MESSAGE_BUFFER_SIZE];
+	char delim[] = " ";
+	char* password = strtok(request_buff,delim);
+	password = strtok(NULL,delim);
+	for (int i=0;i<MAX_USERS;i++){
+		if (CURRENT_USERS[i].id == client_fd && strcmp(CURRENT_USERS[i].password, password)==0){
+			return 1;
+		}
+	}
+	return -1;
 }

@@ -7,8 +7,8 @@
 #include<unistd.h>
 #include<stdlib.h>
 
-#define PORT 6000
-#define BUFFER_SIZE 256
+#include "common_defs.h"
+
 
 void instructions();
 void user_login(int server_sd);
@@ -28,8 +28,8 @@ int main()
 	struct sockaddr_in server_addr;
 	bzero(&server_addr,sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(PORT);
-	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); //INADDR_ANY, INADDR_LOOP
+	server_addr.sin_port = htons(CONTROL_PORT);
+	server_addr.sin_addr.s_addr = inet_addr(SERVER_IP); //INADDR_ANY, INADDR_LOOP
 
 	//connect
     if(connect(server_sd,(struct sockaddr*)&server_addr,sizeof(server_addr))<0)
@@ -41,7 +41,7 @@ int main()
 	// printf("ftp> ");
 	
 	//accept
-	char buffer[BUFFER_SIZE];
+	char buffer[MESSAGE_BUFFER_SIZE];
 
 	instructions();
 	user_login(server_sd);
@@ -95,7 +95,7 @@ void instructions()
 
 void user_login(int server_sd)
 {
-	char buffer[BUFFER_SIZE];
+	char buffer[MESSAGE_BUFFER_SIZE];
 	// char* command1;
 	// char* command2;
 	char* error = "Login failed. Please try again.";
@@ -104,7 +104,7 @@ void user_login(int server_sd)
 	{
 		bzero(buffer, sizeof(buffer));
 		printf("ftp> ");
-		fgets(buffer, BUFFER_SIZE, stdin);
+		fgets(buffer, MESSAGE_BUFFER_SIZE, stdin);
 		// command1 = strtok(buffer, " ");
 		// command2 = strtok(NULL, "\n");
 
@@ -125,7 +125,7 @@ void user_login(int server_sd)
 		{
 			bzero(buffer, sizeof(buffer));
 			printf("ftp> ");
-			fgets(buffer, BUFFER_SIZE, stdin);
+			fgets(buffer, MESSAGE_BUFFER_SIZE, stdin);
 			// command1 = strtok(buffer, " ");
 			// command2 = strtok(NULL, "\n");
 
