@@ -10,6 +10,9 @@
 #include "common_defs.h"
 
 
+void instructions();
+void user_login(int server_sd);
+
 int main()
 {
 	//socket
@@ -35,10 +38,13 @@ int main()
         exit(-1);
     }
     printf("Connected to server\n");
-	printf("ftp> ");
+	// printf("ftp> ");
 	
 	//accept
 	char buffer[MESSAGE_BUFFER_SIZE];
+
+	instructions();
+	user_login(server_sd);
 
 	while(1)
 	{
@@ -61,4 +67,77 @@ int main()
 	}
 
 	return 0;
+}
+
+void instructions()
+{
+	printf("Welcome! Please authenticate user to be able to run server commands.\n");
+	printf("List of commands:\n");
+	printf("USER -> enter username\n");
+	printf("PASS -> enter password\n");
+	printf("STOR -> upload a file from local directory to curren server directory\n");
+	printf("RETR -> download file from current server directory to current local directory\n");
+	printf("LIST -> list all files in current server directory\n");
+	printf("!LIST -> list all files in current local directory\n");
+	printf("CWD -> change current server directory\n");
+	printf("!CWD -> change current local directory\n");
+	printf("PWD -> display current server directory\n");
+	printf("!PWD -> display current local directory\n");
+	printf("QUIT -> close ftp session\n");
+}
+
+void user_login(int server_sd)
+{
+	char buffer[BUFFER_SIZE];
+	// char* command1;
+	// char* command2;
+	char* error = "Login failed. Please try again.";
+
+	while (1)
+	{
+		bzero(buffer, sizeof(buffer));
+		printf("ftp> ");
+		fgets(buffer, BUFFER_SIZE, stdin);
+		// command1 = strtok(buffer, " ");
+		// command2 = strtok(NULL, "\n");
+
+		if(strncmp(buffer, "USER", 4)==0)
+		{
+			int sent = send(server_sd,buffer,sizeof(buffer),0);
+			bzero(buffer, sizeof(buffer));
+			int rcvd = recv(server_sd,buffer,sizeof(buffer),0);
+			printf("%s\n", buffer);
+		}
+		else
+		{
+			printf("%s\n", error);
+			continue;
+		}
+
+		if(strncmp(buffer, "331", 3)==0)
+		{
+			bzero(buffer, sizeof(buffer));
+			printf("ftp> ");
+			fgets(buffer, BUFFER_SIZE, stdin);
+			// command1 = strtok(buffer, " ");
+			// command2 = strtok(NULL, "\n");
+
+			if(strncmp(buffer, "PASS", 4)==0)
+			{
+				int sent = send(server_sd, buffer, sizeof(buffer), 0);
+				bzero(buffer, sizeof(buffer));
+				int rcvd = recv(server_sd, buffer, sizeof(buffer), 0);
+				printf("%s\n", buffer);
+
+				if(strncmp(buffer, "230", 3)==0)
+				{
+					return;
+				}
+			}
+			else
+			{
+				printf("%s\n", error);
+			}
+		}
+	}
 }
