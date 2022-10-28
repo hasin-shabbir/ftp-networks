@@ -12,8 +12,8 @@
 int serve_client(int client_fd);
 int user_auth(int client_fd);
 int request_type(char* request_content);
-int handle_user_cmd(char* request_content);
-int handle_password_cmd(char* request_content);
+int handle_user_cmd(char* request_content, int client_fd);
+int handle_password_cmd(char* request_content, int client_fd);
 
 int main()
 {
@@ -220,7 +220,7 @@ int handle_password_cmd(char* request_content, int client_fd){
 	char* password = strtok(request_buff,delim);
 	password = strtok(NULL,delim);
 	for (int i=0;i<MAX_USERS;i++){
-		if (strcmp(CURRENT_USERS[i].id,client_fd)==0 && strcmp(CURRENT_USERS[i].password, password)==0){
+		if (CURRENT_USERS[i].id == client_fd && strcmp(CURRENT_USERS[i].password, password)==0){
 			return 1;
 		}
 	}
