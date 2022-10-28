@@ -109,7 +109,7 @@ int serve_client(int client_fd){
 	if (req_type>=1 && req_type<=7){
 		if (req_type==1){ //USER
 			int result = handle_user_cmd(message, client_fd);
-			if (result==1){
+			if (result==USER_CMD){
 				send(client_fd,USER_SUCCESS,strlen(USER_SUCCESS),0);
 				printf("user ok sent to client\n"); // TO BE REMOVED
 			}
@@ -118,7 +118,7 @@ int serve_client(int client_fd){
 				printf("user fail sent to client\n"); // TO BE REMOVED
 			}
 		}
-		if (req_type==2){
+		if (req_type==PASS_CMD){ //PASS
 			int result = handle_password_cmd(message, client_fd);
 			if (result==1){
 				send(client_fd,PASSWORD_SUCCESS,strlen(PASSWORD_SUCCESS),0);
@@ -129,14 +129,13 @@ int serve_client(int client_fd){
 				printf("password fail sent to client\n"); // TO BE REMOVED
 			}
 		}
+		if (req_type==QUIT_CMD){ //QUIT
+			printf("Client disconnected \n");
+			close(client_fd);
+			return -1;
+		}
 	}
 
-	if(strcmp(message,"bye")==0)
-	{
-		printf("Client disconnected \n");
-		close(client_fd);
-		return -1;
-	}
 	printf("%s \n",message);
 	return 0;
 }
@@ -146,60 +145,45 @@ int request_type(char* request_content){
 	strcpy(request_buff,request_content);
 	char delim[] = " ";
 	char* req_type = strtok(request_buff,delim);
-	printf("%s",req_type);
-	int req_code;
 
 	if (strcmp(req_type, "PORT") == 0){
-		req_code = 0;
-		return req_code;
+		return PORT_CMD;
 	}
 	if (strcmp(req_type, "USER") == 0){
-		req_code = 1;
-		return req_code;
+		return USER_CMD;
 	}
 	else if(strcmp(req_type, "PASS") == 0){
-		req_code = 2;
-		return req_code;
+		return PASS_CMD;
 	}
 	else if(strcmp(req_type, "STOR") == 0){
-		req_code = 3;
-		return req_code;
+		return STOR_CMD;
 	}
 	else if(strcmp(req_type, "RETR") == 0){
-		req_code = 4;
-		return req_code;
+		return RETR_CMD;
 	}
 	else if(strcmp(req_type, "LIST") == 0){
-		req_code = 5;
-		return req_code;
+		return LIST_CMD;
 	}
 	else if(strcmp(req_type, "CWD") == 0){
-		req_code = 6;
-		return req_code;
+		return CWD_CMD;
 	}
 	else if(strcmp(req_type, "PWD") == 0){
-		req_code = 7;
-		return req_code;
+		return PWD_CMD;
 	}
 	else if(strcmp(req_type, "!LIST") == 0){
-		req_code = 8;
-		return req_code;
+		return C_LIST_CMD;
 	}
 	else if(strcmp(req_type, "!CWD") == 0){
-		req_code = 9;
-		return req_code;
+		return C_CWD_CMD;
 	}
 	else if(strcmp(req_type, "!PWD") == 0){
-		req_code = 10;
-		return req_code;
+		return C_PWD_CMD;
 	}
 	else if(strcmp(req_type, "QUIT") == 0){
-		req_code = 11;
-		return req_code;
+		return QUIT_CMD;
 	}
 	else{
-		req_code = -1;
-		return req_code;
+		return INVALID_CMD;
 	}
 };
 
