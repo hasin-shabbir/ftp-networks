@@ -51,10 +51,11 @@ int main()
        fgets(buffer,sizeof(buffer),stdin);
        printf("ftp> ");
        buffer[strcspn(buffer, "\n")] = 0;  //remove trailing newline char from buffer, fgets does not remove it
-       if(strcmp(buffer,"bye")==0)
+       if(strncmp(buffer,"QUIT", 4)==0)
         {
 			send(server_sd,buffer,strlen(buffer),0);
-        	printf("closing the connection to server \n");
+        	rcvd(server_sd, buffer, sizeof(buffer), 0);
+			printf("%s\n", buffer);
         	close(server_sd);
             break;
         }
@@ -63,7 +64,13 @@ int main()
             perror("send");
             exit(-1);
         }
-        bzero(buffer,sizeof(buffer));			
+        bzero(buffer,sizeof(buffer));
+
+		else if(strncmp(buffer, "STOR", 4)==0 || strncmp(buffer, "RETR", 4)==0 || strncmp(buffer, "LIST", 4)==0)
+		{
+			int channel = 1;
+			
+		}			
 	}
 
 	return 0;
