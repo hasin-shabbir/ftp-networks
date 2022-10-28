@@ -35,7 +35,7 @@ int main()
         exit(-1);
     }
     printf("Connected to server\n");
-
+	printf("ftp> ");
 	
 	//accept
 	char buffer[BUFFER_SIZE];
