@@ -6,6 +6,7 @@
 #include<unistd.h>
 
 #include "common_defs.h"
+#include "server_state.h"
 
 #include "user_mockDB.c"
 
@@ -14,6 +15,7 @@ int user_auth(int client_fd);
 int request_type(char* request_content);
 int handle_user_cmd(char* request_content, int client_fd);
 int handle_password_cmd(char* request_content, int client_fd);
+int handle_port_cmd(char* request_content);
 
 int main()
 {
@@ -58,7 +60,6 @@ int main()
 	FD_ZERO(&full_fdset);
 	FD_SET(server_fd,&full_fdset);
 	int max_fd = server_fd;
-
 
 	//4. accept()
 	while(1)
@@ -107,7 +108,7 @@ int serve_client(int client_fd){
 	
 	int is_auth = 0;
 	if (req_type>=1 && req_type<=7){
-		if (req_type==1){ //USER
+		if (req_type==USER_CMD){ //USER
 			int result = handle_user_cmd(message, client_fd);
 			if (result==USER_CMD){
 				send(client_fd,USER_SUCCESS,strlen(USER_SUCCESS),0);
@@ -134,6 +135,17 @@ int serve_client(int client_fd){
 			send(client_fd,QUIT_MESSAGE,strlen(QUIT_MESSAGE),0);
 			close(client_fd);
 			return -1;
+		}
+		if (req_type==PORT_CMD){
+			int result = handle_port_cmd(message);
+			if(result==1){
+				send(client_fd,PORT_OK,strlen(PORT_OK),0);
+				print("port OK sent to client\n");
+			}
+			else if(result==-1){
+				send(client_fd,PORT_FAIL,strlen(PORT_FAIL),0);
+				print("port FAIL sent to client\n");
+			}
 		}
 	}
 
@@ -215,4 +227,42 @@ int handle_password_cmd(char* request_content, int client_fd){
 		}
 	}
 	return -1;
+}
+
+int handle_port_cmd(char* request_content, int client_fd){
+
+	int client_ftp_connection = socket(AF_INET, SOCK_STREAM, 0);
+	if (setsockopt(client_ftp_connection, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int)) < 0){
+        perror("setsockopt"); 
+        return -1;
+    }
+	if (client_ftp_connection < 0){
+        perror("socket");
+        return -1;
+    }
+	
+	struct sockaddr_in client_ftp_connection_addr;
+	bzero(&client_ftp_connection_addr, sizeof(client_ftp_connection_addr));
+	client_ftp_connection_addr.sin_family = AF_INET;
+    client_ftp_connection_addr.sin_port = htons(DATA_PORT);
+    client_ftp_connection_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+ 	
+	if (bind(client_ftp_connection (struct sockaddr *)&client_ftp_connection_addr, sizeof(client_ftp_connection_addr)) < 0){
+        perror("bind");
+        return -1;
+    }
+
+	int h1, h2, h3, h4, p1, p2;
+
+	int state_ind = curr_states;
+	curr_states++;
+	
+	sscanf(request_content, PORT_REQUEST, &h1, &h2, &h3, &h4, &p1, &p2);
+	SERVER_STATE[state_ind]->ftp_port = p1 * 256 + p2;
+
+    snprintf(SERVER_STATE[state_ind]->ip_addr, IP_SIZE, "%d.%d.%d.%d", h1, h2, h3, h4);
+
+    SERVER_STATE[state_ind]->client_ftp_connection = client_ftp_connection;
+
+	return 1;
 }
