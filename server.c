@@ -230,6 +230,7 @@ int handle_password_cmd(char* request_content, int client_fd){
 }
 
 int handle_port_cmd(char* request_content, int client_fd){
+	//multiple connections, same client
 
 	int client_ftp_connection = socket(AF_INET, SOCK_STREAM, 0);
 	if (setsockopt(client_ftp_connection, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int)) < 0){
@@ -244,7 +245,7 @@ int handle_port_cmd(char* request_content, int client_fd){
 	struct sockaddr_in client_ftp_connection_addr;
 	bzero(&client_ftp_connection_addr, sizeof(client_ftp_connection_addr));
 	client_ftp_connection_addr.sin_family = AF_INET;
-    client_ftp_connection_addr.sin_port = htons(DATA_PORT);
+    client_ftp_connection_addr.sin_port = htons(DATA_PORT); //increment port num on connections
     client_ftp_connection_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
  	
 	if (bind(client_ftp_connection (struct sockaddr *)&client_ftp_connection_addr, sizeof(client_ftp_connection_addr)) < 0){
