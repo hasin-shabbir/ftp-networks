@@ -7,8 +7,8 @@
 #include<unistd.h>
 #include<stdlib.h>
 
-#define PORT 6000
-#define BUFFER_SIZE 256
+#include "common_defs.h"
+
 
 int main()
 {
@@ -25,8 +25,8 @@ int main()
 	struct sockaddr_in server_addr;
 	bzero(&server_addr,sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(PORT);
-	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); //INADDR_ANY, INADDR_LOOP
+	server_addr.sin_port = htons(CONTROL_PORT);
+	server_addr.sin_addr.s_addr = inet_addr(SERVER_IP); //INADDR_ANY, INADDR_LOOP
 
 	//connect
     if(connect(server_sd,(struct sockaddr*)&server_addr,sizeof(server_addr))<0)
@@ -38,7 +38,7 @@ int main()
 	printf("ftp> ");
 	
 	//accept
-	char buffer[BUFFER_SIZE];
+	char buffer[MESSAGE_BUFFER_SIZE];
 
 	while(1)
 	{

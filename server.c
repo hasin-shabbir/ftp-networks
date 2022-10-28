@@ -5,10 +5,10 @@
 #include<arpa/inet.h>
 #include<unistd.h>
 
-#define PORT 6000
-#define BUFFER_SIZE 256
+#include "common_defs.h"
 
 int serve_client(int client_fd);
+int user_auth(int client_fd);
 
 int main()
 {
@@ -29,8 +29,8 @@ int main()
 	struct sockaddr_in server_address;
 	bzero(&server_address,sizeof(server_address));
 	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons(PORT);
-	server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server_address.sin_port = htons(CONTROL_PORT);
+	server_address.sin_addr.s_addr = inet_addr(SERVER_IP);
 	if(bind(server_fd,(struct sockaddr*)&server_address,sizeof(server_address))<0)
 	{
 		perror("bind");
@@ -84,9 +84,8 @@ int main()
 	close(server_fd);
 }
 //=================================
-int serve_client(int client_fd)
-{
-	char message[BUFFER_SIZE];	
+int serve_client(int client_fd){
+	char message[MESSAGE_BUFFER_SIZE];	
 	bzero(&message,sizeof(message));
 	if(recv(client_fd,message,sizeof(message),0)<0)
 	{
@@ -102,4 +101,8 @@ int serve_client(int client_fd)
 	}
 	printf("%s \n",message);
 	return 0;
+}
+
+int user_auth(int client_fd){
+
 }
