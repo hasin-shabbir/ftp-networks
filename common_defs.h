@@ -12,4 +12,9 @@
 #define USERS_DB_NAME "users.txt"
 #define DB_READ_FAIL "server could not read user database\n"
 
+#define USER_SUCCESS "331 Username OK, need password."
+#define USER_FAILURE "530 Not logged in."
+#define PASSWORD_SUCCESS "230 User logged in, proceed."
+#define PASSWORD_FAILURE "530 Not logged in."
+
 #endif

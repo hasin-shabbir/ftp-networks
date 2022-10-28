@@ -17,12 +17,12 @@ int read_db(){
     size_t len = 0;
     size_t num_chars;
     int val_type = 0; //0 for username, 1 for password
-    int user_ind = 0;
+    int user_ind = 0; 
 
     if (fptr != NULL){
         while ((num_chars = getline(&buff, &len, fptr)) != -1){
             if (val_type==0){
-                CURRENT_USERS[user_ind].id = user_ind;
+                CURRENT_USERS[user_ind].id = -1;
                 CURRENT_USERS[user_ind].auth = 0;
                 strcpy(CURRENT_USERS[user_ind].username, buff);
             }
