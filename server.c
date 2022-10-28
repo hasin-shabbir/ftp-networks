@@ -103,7 +103,8 @@ int serve_client(int client_fd){
 		return 0;
 	}
 	int req_type = request_type(message);
-
+	printf("%d\n",req_type);
+	
 	int is_auth = 0;
 	if (req_type>=1 && req_type<=7){
 		if (req_type==1){ //USER
@@ -118,7 +119,7 @@ int serve_client(int client_fd){
 			}
 		}
 		if (req_type==2){
-			int result = handle_user_cmd(message, client_fd);
+			int result = handle_password_cmd(message, client_fd);
 			if (result==1){
 				send(client_fd,PASSWORD_SUCCESS,strlen(PASSWORD_SUCCESS),0);
 				printf("password ok sent to client\n"); // TO BE REMOVED
@@ -142,8 +143,10 @@ int serve_client(int client_fd){
 
 int request_type(char* request_content){
 	char request_buff[MESSAGE_BUFFER_SIZE];
+	strcpy(request_buff,request_content);
 	char delim[] = " ";
 	char* req_type = strtok(request_buff,delim);
+	printf("%s",req_type);
 	int req_code;
 
 	if (strcmp(req_type, "PORT") == 0){
@@ -202,6 +205,7 @@ int request_type(char* request_content){
 
 int handle_user_cmd(char* request_content, int client_fd){
 	char request_buff[MESSAGE_BUFFER_SIZE];
+	strcpy(request_buff,request_content);
 	char delim[] = " ";
 	char* username = strtok(request_buff,delim);
 	username = strtok(NULL,delim);
@@ -216,9 +220,11 @@ int handle_user_cmd(char* request_content, int client_fd){
 
 int handle_password_cmd(char* request_content, int client_fd){
 	char request_buff[MESSAGE_BUFFER_SIZE];
+	strcpy(request_buff,request_content);
 	char delim[] = " ";
 	char* password = strtok(request_buff,delim);
 	password = strtok(NULL,delim);
+	printf("pass: %s\n", password);
 	for (int i=0;i<MAX_USERS;i++){
 		if (CURRENT_USERS[i].id == client_fd && strcmp(CURRENT_USERS[i].password, password)==0){
 			return 1;
