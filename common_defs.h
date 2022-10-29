@@ -36,6 +36,7 @@
 #define QUIT_CMD 11
 #define INVALID_CMD -1
 
-#define PORT_REQUEST "PORT %d,%d,%d,%d,%d,%d"
+#define PORT_REQUEST_FORMAT "PORT %d,%d,%d,%d,%d,%d"
+#define IP_ADDR_FORMAT "%d.%d.%d.%d"
 
 #endif

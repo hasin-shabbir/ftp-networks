@@ -258,10 +258,10 @@ int handle_port_cmd(char* request_content, int client_fd){
 	int state_ind = curr_states;
 	curr_states++;
 	
-	sscanf(request_content, PORT_REQUEST, &h1, &h2, &h3, &h4, &p1, &p2);
+	sscanf(request_content, PORT_REQUEST_FORMAT, &h1, &h2, &h3, &h4, &p1, &p2);
 	SERVER_STATE[state_ind]->ftp_port = p1 * 256 + p2;
 
-    snprintf(SERVER_STATE[state_ind]->ip_addr, IP_SIZE, "%d.%d.%d.%d", h1, h2, h3, h4);
+    snprintf(SERVER_STATE[state_ind]->ip_addr, IP_SIZE, IP_ADDR_FORMAT, h1, h2, h3, h4);
 
     SERVER_STATE[state_ind]->client_ftp_connection = client_ftp_connection;
 
