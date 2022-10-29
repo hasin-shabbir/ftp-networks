@@ -22,6 +22,7 @@
 #define PORT_OK "200 PORT command successful."
 #define PORT_FAIL "425 Can't open data connection"
 #define FILE_STATUS_OK "150 File status okay; about to open data connection."
+#define TRANSFER_COMPLETED "226 Transfer completed."
 
 #define PORT_CMD 0
 #define USER_CMD 1

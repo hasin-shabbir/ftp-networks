@@ -149,6 +149,12 @@ int serve_client(int client_fd){
 				printf("port FAIL sent to client\n");
 			}
 		}
+		if (req_type==RETR_CMD){
+			int result = handle_retr_cmd(message, client_fd);
+			if (result==1){
+				send(client_fd,TRANSFER_COMPLETED,strlen(TRANSFER_COMPLETED),0);
+			}
+		}
 	}
 
 	printf("%s \n",message);
@@ -325,6 +331,9 @@ int handle_retr_cmd(char* request_content, int client_fd){
             send(SERVER_STATE[state_ind].client_ftp_connection, file_data + bytes_sent, bites_for_iteration, 0);
             bytes_sent += bites_for_iteration;
         }
+
+		close(SERVER_STATE[state_ind].client_ftp_connection);
+		fclose(file_to_send);
 		return 0;
 	}
 	else{ //file doesn't exist
