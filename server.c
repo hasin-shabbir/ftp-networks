@@ -150,9 +150,12 @@ int serve_client(int client_fd){
 			}
 		}
 		if (req_type==RETR_CMD){
-			int result = handle_retr_cmd(message, client_fd);
-			if (result==1){
-				send(client_fd,TRANSFER_COMPLETED,strlen(TRANSFER_COMPLETED),0);
+			if (fork()==0){
+				int result = handle_retr_cmd(message, client_fd);
+				if (result==1){
+					send(client_fd,TRANSFER_COMPLETED,strlen(TRANSFER_COMPLETED),0);
+				}
+				exit(0);
 			}
 		}
 	}
