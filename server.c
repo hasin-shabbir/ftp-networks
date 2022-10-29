@@ -18,6 +18,7 @@ int handle_user_cmd(char* request_content, int client_fd);
 int handle_password_cmd(char* request_content, int client_fd);
 int handle_port_cmd(char* request_content, int client_fd);
 int handle_retr_cmd(char* request_content, int client_fd);
+int handle_stor_cmd(char* request_content, int client_fd);
 
 int main()
 {
@@ -152,6 +153,15 @@ int serve_client(int client_fd){
 		if (req_type==RETR_CMD){
 			if (fork()==0){
 				int result = handle_retr_cmd(message, client_fd);
+				if (result==1){
+					send(client_fd,TRANSFER_COMPLETED,strlen(TRANSFER_COMPLETED),0);
+				}
+				exit(0);
+			}
+		}
+		if (req_type==STOR_CMD){
+			if (fork()==0){
+				int result = handle_stor_cmd(message, client_fd);
 				if (result==1){
 					send(client_fd,TRANSFER_COMPLETED,strlen(TRANSFER_COMPLETED),0);
 				}
@@ -303,9 +313,11 @@ int handle_retr_cmd(char* request_content, int client_fd){
     client_connection.sin_port = htons(SERVER_STATE[state_ind].ftp_port);
     client_connection.sin_addr.s_addr = inet_addr(SERVER_STATE[state_ind].ip_addr);
 
+	int connection_at = SERVER_STATE[state_ind].client_ftp_connection;
+
 	send(client_fd, FILE_STATUS_OK, strlen(FILE_STATUS_OK), 0);
 
-	if (connect(SERVER_STATE[state_ind].client_ftp_connection, (struct sockaddr *)&client_connection, sizeof(client_connection)) < 0)
+	if (connect(connection_at, (struct sockaddr *)&client_connection, sizeof(client_connection)) < 0)
     {
         perror("connect");
 
@@ -315,7 +327,7 @@ int handle_retr_cmd(char* request_content, int client_fd){
 	int file_size = get_file_size(filename);
 	if(file_size!=-1){
 		//inform about the length of file to be received
-		send(SERVER_STATE[state_ind].client_ftp_connection, &file_size, sizeof(int), 0);
+		// send(connection_at, &file_size, sizeof(int), 0);
 
 		FILE* file_to_send = fopen(filename, "r");
         char *file_data = malloc(file_size);
@@ -331,11 +343,11 @@ int handle_retr_cmd(char* request_content, int client_fd){
             else{
                 bites_for_iteration = file_size - bytes_sent;
 			}
-            send(SERVER_STATE[state_ind].client_ftp_connection, file_data + bytes_sent, bites_for_iteration, 0);
+            send(connection_at, file_data + bytes_sent, bites_for_iteration, 0);
             bytes_sent += bites_for_iteration;
         }
 
-		close(SERVER_STATE[state_ind].client_ftp_connection);
+		close(connection_at);
 		fclose(file_to_send);
 		return 0;
 	}
@@ -343,4 +355,58 @@ int handle_retr_cmd(char* request_content, int client_fd){
 		return -1;
 	}
 
+}
+
+int handle_stor_cmd(char* request_content, int client_fd){
+	int state_ind = get_state_ind(client_fd);
+
+	char request_buff[MESSAGE_BUFFER_SIZE];
+	strcpy(request_buff,request_content);
+	char delim[] = " ";
+	char* filename = strtok(request_buff,delim);
+	filename = strtok(NULL,delim);
+
+	if (filename==NULL){
+		return -1;
+	}
+
+	struct sockaddr_in client_connection;
+
+	bzero(&client_connection, sizeof(client_connection));
+    client_connection.sin_family = AF_INET;
+    client_connection.sin_port = htons(SERVER_STATE[state_ind].ftp_port);
+    client_connection.sin_addr.s_addr = inet_addr(SERVER_STATE[state_ind].ip_addr);
+
+	int connection_at = SERVER_STATE[state_ind].client_ftp_connection;
+
+	send(client_fd, FILE_STATUS_OK, strlen(FILE_STATUS_OK), 0);
+
+	if (connect(connection_at, (struct sockaddr *)&client_connection, sizeof(client_connection)) < 0)
+    {
+        perror("connect");
+
+        return -1;
+    }
+
+	char buffer[PACKET_SIZE];
+    FILE* file_to_recv = fopen(filename, "w");
+    if (file_to_recv == NULL) {
+        return -1;
+    }
+    fclose(file_to_recv);
+
+    file_to_recv = fopen(filename, "a+");
+    int bytes_received = recv(connection_at, buffer, sizeof(buffer), 0);
+    if (bytes_received == 0){
+		return -1;
+	}
+    while (bytes_received > 0) {
+        fwrite(buffer, bytes_received, 1, file_to_recv);
+        bytes_received = recv(connection_at, buffer, sizeof(buffer), 0);
+    }
+
+	close(connection_at);
+	fclose(file_to_recv);
+    
+	return 1;
 }
