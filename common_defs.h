@@ -21,6 +21,8 @@
 #define QUIT_MESSAGE "221 Service closing control connection."
 #define PORT_OK "200 PORT command successful."
 #define PORT_FAIL "425 Can't open data connection"
+#define FILE_STATUS_OK "150 File status okay; about to open data connection."
+#define TRANSFER_COMPLETED "226 Transfer completed."
 
 #define PORT_CMD 0
 #define USER_CMD 1
@@ -37,6 +39,9 @@
 #define INVALID_CMD -1
 
 #define PORT_REQUEST_FORMAT "PORT %d,%d,%d,%d,%d,%d"
+#define RETR_REQUEST_FORMAT "%s %s"
 #define IP_ADDR_FORMAT "%d.%d.%d.%d"
+
+#define PACKET_SIZE 2048
 
 #endif
