@@ -15,7 +15,7 @@ int user_auth(int client_fd);
 int request_type(char* request_content);
 int handle_user_cmd(char* request_content, int client_fd);
 int handle_password_cmd(char* request_content, int client_fd);
-int handle_port_cmd(char* request_content);
+int handle_port_cmd(char* request_content, int client_fd);
 
 int main()
 {
@@ -137,14 +137,14 @@ int serve_client(int client_fd){
 			return -1;
 		}
 		if (req_type==PORT_CMD){
-			int result = handle_port_cmd(message);
+			int result = handle_port_cmd(message, client_fd);
 			if(result==1){
 				send(client_fd,PORT_OK,strlen(PORT_OK),0);
-				print("port OK sent to client\n");
+				printf("port OK sent to client\n");
 			}
 			else if(result==-1){
 				send(client_fd,PORT_FAIL,strlen(PORT_FAIL),0);
-				print("port FAIL sent to client\n");
+				printf("port FAIL sent to client\n");
 			}
 		}
 	}
@@ -233,7 +233,7 @@ int handle_port_cmd(char* request_content, int client_fd){
 	//multiple connections, same client
 
 	int client_ftp_connection = socket(AF_INET, SOCK_STREAM, 0);
-	if (setsockopt(client_ftp_connection, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int)) < 0){
+	if (setsockopt(client_ftp_connection, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0){
         perror("setsockopt"); 
         return -1;
     }
@@ -248,7 +248,7 @@ int handle_port_cmd(char* request_content, int client_fd){
     client_ftp_connection_addr.sin_port = htons(DATA_PORT); //increment port num on connections
     client_ftp_connection_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
  	
-	if (bind(client_ftp_connection (struct sockaddr *)&client_ftp_connection_addr, sizeof(client_ftp_connection_addr)) < 0){
+	if (bind(client_ftp_connection, (struct sockaddr *)&client_ftp_connection_addr, sizeof(client_ftp_connection_addr)) < 0){
         perror("bind");
         return -1;
     }
@@ -259,11 +259,11 @@ int handle_port_cmd(char* request_content, int client_fd){
 	curr_states++;
 	
 	sscanf(request_content, PORT_REQUEST_FORMAT, &h1, &h2, &h3, &h4, &p1, &p2);
-	SERVER_STATE[state_ind]->ftp_port = p1 * 256 + p2;
+	SERVER_STATE[state_ind].ftp_port = p1 * 256 + p2;
 
-    snprintf(SERVER_STATE[state_ind]->ip_addr, IP_SIZE, IP_ADDR_FORMAT, h1, h2, h3, h4);
+    snprintf(SERVER_STATE[state_ind].ip_addr, IP_SIZE, IP_ADDR_FORMAT, h1, h2, h3, h4);
 
-    SERVER_STATE[state_ind]->client_ftp_connection = client_ftp_connection;
+    SERVER_STATE[state_ind].client_ftp_connection = client_ftp_connection;
 
 	return 1;
 }
