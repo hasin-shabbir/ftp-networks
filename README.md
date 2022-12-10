@@ -42,3 +42,14 @@ launch.
 10. **!PWD** This command displays the current client directory.
 
 11. **QUIT** This command quits the FTP session and closes the control TCP connection. The server replies with "221 Service closing control connection." and the client terminates after receiving the reply. If this command is issued during an ongoing data transfer, the server/client abort the data transfer.
+
+
+### Note
+**PORT h1,h2,h3,h4,p1,p2** This command is used to specify the client IP address and port
+number for the data channel and is sent automatically by the client before sending a **RETR**,
+**STOR** or **LIST** command. The server replies with "200 PORT command successful." before
+starting the data transfer. The argument is the concatenation of a 32-bit internet host address
+and a 16-bit TCP port address. This address information is broken into 8-bit fields and the value
+of each field is transmitted as a decimal number (in character string representation). The fields
+are separated by commas, where h1 is the high order 8 bits of the internet client address and p1
+is the high order 8 bits of the client port.
