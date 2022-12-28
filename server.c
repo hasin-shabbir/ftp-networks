@@ -556,6 +556,10 @@ int handle_retr_cmd(char* request_content, int client_fd){
 		return -1;
 	}
 
+	char temp_dir[4096];
+	getcwd(temp_dir,sizeof(temp_dir));
+	chdir(SERVER_STATE[state_ind].directory);
+
 	//send FILE STATUS OK on data socket
 	int file_size = get_file_size(filename);
 	if (file_size==-1){
@@ -596,6 +600,7 @@ int handle_retr_cmd(char* request_content, int client_fd){
 		close(connection_at);
 		//close file after transmission
 		fclose(file_to_send);
+		chdir(temp_dir);
 	}
 	return 1;
 }
@@ -630,6 +635,9 @@ int handle_stor_cmd(char* request_content, int client_fd){
 	//temporary filename
 	char temp_fname[FILE_NAME_MAX];
 	sprintf(temp_fname,"temp%d.dat",channels);
+	char temp_dir[4096];
+	getcwd(temp_dir,sizeof(temp_dir));
+	chdir(SERVER_STATE[state_ind].directory);
 
 	//check if file writable and create new file
     FILE* file_to_recv = fopen(temp_fname, "w");
@@ -643,7 +651,7 @@ int handle_stor_cmd(char* request_content, int client_fd){
 	
 	//keep track of received bytes
     int bytes_received = recv(connection_at, buffer, sizeof(buffer), 0);
-	
+	 
 	// if nothing received, terminate action
     if (bytes_received == 0){
 		return -1;
@@ -662,6 +670,7 @@ int handle_stor_cmd(char* request_content, int client_fd){
 	fclose(file_to_recv);
 	//rename file to specified name
 	rename(temp_fname,filename);
+	chdir(temp_dir);
     
 	return 1;
 }
@@ -750,7 +759,8 @@ int handle_cwd_cmd(char* request_content, int client_fd){
 	if (dirname==NULL){
 		return -1;
 	}
-	
+	char temp_dir[4096];
+	getcwd(temp_dir,sizeof(temp_dir));
 	//change directory and report if any error
 	if(chdir(dirname)==-1){
 		return -2;
@@ -758,6 +768,8 @@ int handle_cwd_cmd(char* request_content, int client_fd){
 
 	//get current directory
 	getcwd(SERVER_STATE[state_ind].directory,sizeof(SERVER_STATE[state_ind].directory));
+
+	chdir(temp_dir);
 	
 	//respond with current directory
 	char RESPONSE_CONTENT[MESSAGE_BUFFER_SIZE];
